@@ -1,56 +1,92 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Desafio Tetris Stack
-// Tema 3 - Integração de Fila e Pilha
-// Este código inicial serve como base para o desenvolvimento do sistema de controle de peças.
-// Use as instruções de cada nível para desenvolver o desafio.
+// Definição da estrutura de uma sala
+typedef struct Sala {
+  char nome[50];
+  struct Sala *esquerda;
+  struct Sala *direita;
+} Sala;
 
-int main() {
-
-    // 🧩 Nível Novato: Fila de Peças Futuras
-    //
-    // - Crie uma struct Peca com os campos: tipo (char) e id (int).
-    // - Implemente uma fila circular com capacidade para 5 peças.
-    // - Crie funções como inicializarFila(), enqueue(), dequeue(), filaCheia(), filaVazia().
-    // - Cada peça deve ser gerada automaticamente com um tipo aleatório e id sequencial.
-    // - Exiba a fila após cada ação com uma função mostrarFila().
-    // - Use um menu com opções como:
-    //      1 - Jogar peça (remover da frente)
-    //      0 - Sair
-    // - A cada remoção, insira uma nova peça ao final da fila.
-
-
-
-    // 🧠 Nível Aventureiro: Adição da Pilha de Reserva
-    //
-    // - Implemente uma pilha linear com capacidade para 3 peças.
-    // - Crie funções como inicializarPilha(), push(), pop(), pilhaCheia(), pilhaVazia().
-    // - Permita enviar uma peça da fila para a pilha (reserva).
-    // - Crie um menu com opção:
-    //      2 - Enviar peça da fila para a reserva (pilha)
-    //      3 - Usar peça da reserva (remover do topo da pilha)
-    // - Exiba a pilha junto com a fila após cada ação com mostrarPilha().
-    // - Mantenha a fila sempre com 5 peças (repondo com gerarPeca()).
-
-
-    // 🔄 Nível Mestre: Integração Estratégica entre Fila e Pilha
-    //
-    // - Implemente interações avançadas entre as estruturas:
-    //      4 - Trocar a peça da frente da fila com o topo da pilha
-    //      5 - Trocar os 3 primeiros da fila com as 3 peças da pilha
-    // - Para a opção 4:
-    //      Verifique se a fila não está vazia e a pilha tem ao menos 1 peça.
-    //      Troque os elementos diretamente nos arrays.
-    // - Para a opção 5:
-    //      Verifique se a pilha tem exatamente 3 peças e a fila ao menos 3.
-    //      Use a lógica de índice circular para acessar os primeiros da fila.
-    // - Sempre valide as condições antes da troca e informe mensagens claras ao usuário.
-    // - Use funções auxiliares, se quiser, para modularizar a lógica de troca.
-    // - O menu deve ficar assim:
-    //      4 - Trocar peça da frente com topo da pilha
-    //      5 - Trocar 3 primeiros da fila com os 3 da pilha
-
-
-    return 0;
+/**
+ * criarSala
+ * Cria uma sala com nome fornecido e ponteiros para esquerda/direita nulos.
+ */
+Sala *criarSala(const char *nome) {
+  Sala *novaSala = (Sala *)malloc(sizeof(Sala));
+  if (novaSala == NULL) {
+    printf("Erro ao alocar memória!\n");
+    exit(1);
+  }
+  strcpy(novaSala->nome, nome);
+  novaSala->esquerda = NULL;
+  novaSala->direita = NULL;
+  return novaSala;
 }
 
+/**
+ * explorarSalas
+ * Permite ao jogador navegar pela mansão a partir da sala atual.
+ */
+void explorarSalas(Sala *atual) {
+  if (atual == NULL)
+    return;
+
+  printf("\nVocê está na sala: %s\n", atual->nome);
+
+  // Se a sala não possui filhos, é um nó-folha
+  if (atual->esquerda == NULL && atual->direita == NULL) {
+    printf("Esta sala não possui mais caminhos. Fim da exploração!\n");
+    return;
+  }
+
+  char escolha;
+  do {
+    printf("Escolha o caminho: (e) Esquerda, (d) Direita, (s) Sair: ");
+    scanf(" %c", &escolha);
+
+    if (escolha == 'e' && atual->esquerda != NULL) {
+      explorarSalas(atual->esquerda);
+      break;
+    } else if (escolha == 'd' && atual->direita != NULL) {
+      explorarSalas(atual->direita);
+      break;
+    } else if (escolha == 's') {
+      printf("Saindo da exploração...\n");
+      break;
+    } else {
+      printf("Opção inválida ou caminho inexistente. Tente novamente.\n");
+    }
+  } while (1);
+}
+
+int main() {
+  // Montagem do mapa da mansão
+  Sala *hall = criarSala("Hall de Entrada");
+  Sala *cozinha = criarSala("Cozinha");
+  Sala *salaEstar = criarSala("Sala de Estar");
+  Sala *jardim = criarSala("Jardim");
+  Sala *biblioteca = criarSala("Biblioteca");
+  Sala *quarto = criarSala("Quarto");
+
+  // Definindo caminhos (árvore binária)
+  hall->esquerda = cozinha;
+  hall->direita = salaEstar;
+  cozinha->esquerda = jardim;
+  salaEstar->direita = biblioteca;
+  salaEstar->esquerda = quarto;
+
+  // Início da exploração
+  explorarSalas(hall);
+
+  // Liberação de memória
+  free(jardim);
+  free(cozinha);
+  free(biblioteca);
+  free(quarto);
+  free(salaEstar);
+  free(hall);
+
+  return 0;
+}
